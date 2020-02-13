@@ -1,22 +1,22 @@
 import bs4 as bs4
 import requests
 class VkBot:
-    
+
     def __init__(self, user_id):
         print("Создан объект бота!")
         self._USER_ID = user_id
         self._USERNAME = self._get_user_name_from_vk_id(user_id)
-        
-        self._COMMANDS = ["ПРИВЕТ", "ПОГОДА", "ВРЕМЯ", "ПОКА"]
-        
+
+        self._COMMANDS = ["ПРИВЕТ", "ПОКА"]
+
     def _get_user_name_from_vk_id(self, user_id):
         request = requests.get("https://vk.com/id"+str(user_id))
         bs = bs4.BeautifulSoup(request.text, "html.parser")
-        
+
         user_name = self._clean_all_tag_from_str(bs.findAll("title")[0])
-        
+
         return user_name.split()[0]
-    
+
     # Получение времени:
     def _get_time(self):
         request = requests.get("https://my-calend.ru/date-and-time-today")
@@ -24,10 +24,10 @@ class VkBot:
         return self._clean_all_tag_from_str(str(b.select(".page")[0].findAll("h2")[1])).split()[1]
 
     # Получение погоды
-    def _get_weather(city: str = "санкт-петербург"):
-        request = requests.get("https://sinoptik.com.ru/погода-" + city)
+    def _get_weather(city: str = "тюмень"):
+        request = requests.get("https://sinoptik.com.ru/погода-тюмень")
         b = bs4.BeautifulSoup(request.text, "html.parser")
-        
+
         p3 = b.select('.temperature .p3')
         weather1 = p3[0].getText()
         p4 = b.select('.temperature .p4')
@@ -42,14 +42,14 @@ class VkBot:
         temp = b.select('.rSide .description')
         weather = temp[0].getText()
         result = result + weather.strip()
-        
+
         return result
-        
+
     # Метод для очистки от ненужных тэгов
-    
+
     @staticmethod
     def _clean_all_tag_from_str(string_line):
-        
+
         # Очистка строки stringLine от тэгов и их содержимых
         # :param string_line: Очищаемая строка
         # :return: очищенная строка
@@ -64,26 +64,19 @@ class VkBot:
             else:
                 if i == ">":
                     not_skip = True
-        
+
         return result
-    
-    
+
+
     def new_message(self, message):
         # Привет
         if message.upper() == self._COMMANDS[0]:
-            return f"Привет-привет, {self._USERNAME}!"
-        
-        # Погода
-        elif message.upper() == self._COMMANDS[1]:
-            return self._get_weather()
-        
-        # Время
-        elif message.upper() == self._COMMANDS[2]:
-            return self._get_time()
-        
+            return f"Привет-привет, {self._get_user_name_from_vk_id(self._USER_ID)}!"
+
         # Пока
-        elif message.upper() == self._COMMANDS[3]:
+        elif message.upper() == self._COMMANDS[1]:
             return f"Пока-пока, {self._USERNAME}!"
-        
+        elif "https://www.youtube.com/watch?" in message:
+            return f"Вот это да, это же ссылка"
         else:
-            return "Не понимаю о чем вы..."
+            return message
